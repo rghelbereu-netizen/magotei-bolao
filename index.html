@@ -236,6 +236,32 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
     display: inline-block;
   }
 }
+
+/* --- Mobile: make leaderboard scrollable --- */
+@media (max-width: 640px) {
+  #leaderboard {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #leaderboard table {
+    min-width: 720px; /* forces scroll instead of squishing */
+  }
+}
+
+    #leaderboard th:first-child,
+#leaderboard td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--card);
+}
+
+#leaderboard th:nth-child(2),
+#leaderboard td:nth-child(2) {
+  position: sticky;
+  left: 40px;
+  background: var(--card);
+}
     
   </style>
 </head>
@@ -796,6 +822,7 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 </script>
 </body>
 </html>
+
 
 
 

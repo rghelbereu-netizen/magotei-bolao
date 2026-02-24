@@ -257,7 +257,12 @@
     return localStorage.getItem(LS_KEY) || sessionStorage.getItem(LS_KEY);
   }
 
-  const logout = () => { localStorage.removeItem(LS_KEY); location.reload(); };
+  const logout = () => {
+  localStorage.removeItem(LS_KEY);
+  sessionStorage.removeItem(LS_KEY);
+  if (window._bolaoTimer) clearInterval(window._bolaoTimer);
+  location.reload();
+};
 
   function showLogin() {
     app.innerHTML = `
@@ -689,3 +694,4 @@
 </script>
 </body>
 </html>
+

@@ -211,31 +211,31 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
     margin-top: 18px; /* space under the badge */
   }
 
-  .team {
-    min-width: 0;
-    gap: 8px;
-  }
-
+  .team { min-width: 0; gap: 8px; }
   .team.home { justify-content: flex-start; }
   .team.away { justify-content: flex-end; }
 
-  /* slightly smaller team text on phones */
   .tname { font-size: 15px; line-height: 1.15; }
 
-  /* inputs fit */
   .scoreInput { width: 64px; }
-
-  /* save button can wrap nicely if space is tight */
   .scorebox { flex-wrap: wrap; }
   .scorebox .save { width: 100%; max-width: 220px; }
 
-  /* remove the desktop right-padding on tiny screens */
+  /* mh-inner doesn't need to reserve space for badge on mobile */
   .match-header > .mh-inner{
-    padding-right: 12px;
+    padding-right: 12px !important;
     padding-left: 12px;
   }
+
+  /* MOVE BADGE INTO FLOW ON MOBILE */
+  .stateBadge{
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    margin: 8px auto 6px;
+    display: inline-block;
+  }
 }
-/* ---------- END Responsive / Mobile fixes ---------- */
     
   </style>
 </head>
@@ -796,6 +796,7 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 </script>
 </body>
 </html>
+
 
 
 

@@ -1,30 +1,41 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.status(405).json({ ok: false, error: "POST only" });
-    return;
-  }
-
-  const SCRIPT_URL = process.env.GS_SCRIPT_URL;   // your Apps Script /exec
-  const TOKEN = process.env.GS_API_TOKEN;         // must match API_TOKEN in Code.gs
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "POST only" });
 
   try {
-    const payload = req.body || {};
-    const upstream = await fetch(SCRIPT_URL, {
+    const { fn, args } = req.body || {};
+    const scriptUrl = process.env.GS_SCRIPT_URL;
+    const token = process.env.GS_API_TOKEN;
+
+    if (!scriptUrl) return res.status(500).json({ ok: false, error: "Missing GS_SCRIPT_URL" });
+    if (!token) return res.status(500).json({ ok: false, error: "Missing GS_API_TOKEN" });
+    if (!fn) return res.status(400).json({ ok: false, error: "Missing fn" });
+
+    const upstream = await fetch(scriptUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, token: TOKEN })
+      body: JSON.stringify({ token, fn, args: args || [] }),
     });
 
     const text = await upstream.text();
 
-    // Pass through JSON if possible
+    // Try JSON parse, otherwise return snippet to diagnose
     try {
-      const json = JSON.parse(text);
-      res.status(200).json(json);
+      const data = JSON.parse(text);
+      return res.status(200).json(data);
     } catch {
-      res.status(200).send(text);
+      return res.status(502).json({
+        ok: false,
+        error: "Apps Script returned HTML/not-JSON. Fix doPost/deploy/access/URL.",
+        status: upstream.status,
+        contentType: upstream.headers.get("content-type"),
+        snippet: text.slice(0, 500)
+      });
     }
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message || String(err) });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message || String(e) });
   }
 }

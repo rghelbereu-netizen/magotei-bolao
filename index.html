@@ -94,8 +94,25 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
     .pick-mine{ background: rgba(255,247,204,.12); }
     .picks-toggle{ font-size: 12px; padding: 8px 10px; background: rgba(255,255,255,.05); border-color: var(--border); }
 
-    .matchline{ display:flex; align-items:center; gap:10px; }
-    .team{ display:flex; align-items:center; gap:10px; min-width: 220px; }
+    .matchline{
+  display:flex;
+  align-items:center;
+  justify-content:center; /* <-- centers on desktop */
+  gap:12px;
+  width:100%;
+}
+
+.team{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;      /* allow shrink */
+  flex:1;           /* each team takes equal space */
+  max-width:340px;  /* keeps it compact/centered */
+}
+
+.team.home{ justify-content:flex-start; }
+.team.away{ justify-content:flex-end; }
     .badge-img{ width: 26px; height: 26px; border-radius: 8px; object-fit: contain; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
     .vs{ color: rgba(230,238,252,.45); font-weight: 800; }
 
@@ -149,7 +166,6 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 /* ---------- Responsive / Mobile fixes ---------- */
 
 /* allow team blocks to shrink (prevents overflow) */
-.team { min-width: 0; }
 
 /* match header is a centered column, badge is pinned */
 .match-header{
@@ -780,6 +796,7 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 </script>
 </body>
 </html>
+
 
 
 

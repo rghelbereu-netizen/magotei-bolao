@@ -1,42 +1,691 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-  <title>Magotei Bol�o</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #0b0f1a;
+    :root{
+      --bg:#0b0f14;
+      --card:#111826;
+      --card2:#0f1623;
+      --border:rgba(255,255,255,.08);
+      --text:#e6eefc;
+      --muted:rgba(230,238,252,.68);
+      --accent:#7c5cff;
+      --good:#2dd4bf;
+      --bad:#fb7185;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
     }
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+    *{ box-sizing:border-box; }
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, rgba(124,92,255,.35), transparent 60%),
+                  radial-gradient(900px 400px at 80% 0px, rgba(45,212,191,.18), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      max-width: 980px;
+      margin: 18px auto;
+      padding: 0 14px 40px;
     }
 
-    .fallback {
-      display: none;
-      color: white;
+    h1{ margin: 18px 0 10px; font-size: 18px; color: var(--muted); font-weight: 600; letter-spacing:.2px; }
+    h2{ margin: 0 0 10px; font-size: 18px; }
+    h3{ margin: 0 0 8px; font-size: 15px; color: var(--muted); font-weight: 600; }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin: 12px 0;
+      box-shadow: var(--shadow);
+    }
+
+    .row{ display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+    .muted{ color: var(--muted); }
+    .locked{ color: var(--bad); font-weight: 700; }
+    .open{ color: var(--good); font-weight: 700; }
+
+    input, select{
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    input::placeholder{ color: rgba(230,238,252,.45); }
+    input:focus, select:focus{ border-color: rgba(124,92,255,.6); box-shadow: 0 0 0 3px rgba(124,92,255,.15); }
+
+    button{
+      background: rgba(124,92,255,.22);
+      border: 1px solid rgba(124,92,255,.45);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform .06s ease, background .2s ease;
+    }
+    button:hover{ background: rgba(124,92,255,.32); }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
+
+    table{ width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td{ border-bottom: 1px solid rgba(255,255,255,.06); padding: 10px 8px; text-align: left; }
+    th{ color: rgba(230,238,252,.75); font-weight: 700; background: rgba(255,255,255,.02); position: sticky; top: 0; backdrop-filter: blur(8px); }
+
+    .badge{ padding: 4px 10px; border-radius: 999px; font-weight: 800; font-size: 12px; display:inline-block; }
+    .badge-open{ background: rgba(45,212,191,.14); border:1px solid rgba(45,212,191,.3); color: var(--good); }
+    .badge-locked{ background: rgba(251,113,133,.12); border:1px solid rgba(251,113,133,.28); color: var(--bad); }
+
+    .countdown{ font-size: 12px; margin-top: 6px; color: rgba(230,238,252,.6); }
+
+    .pick-mine{ background: rgba(255,247,204,.12); }
+    .picks-toggle{ font-size: 12px; padding: 8px 10px; background: rgba(255,255,255,.05); border-color: var(--border); }
+
+    .matchline{ display:flex; align-items:center; gap:10px; }
+    .team{ display:flex; align-items:center; gap:10px; min-width: 220px; }
+    .badge-img{ width: 26px; height: 26px; border-radius: 8px; object-fit: contain; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
+    .vs{ color: rgba(230,238,252,.45); font-weight: 800; }
+
+    .scorebox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .scoreInput{
+      width: 80px;
       text-align: center;
-      padding-top: 40px;
-      font-family: Arial;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing:.5px;
     }
+
+    .resultline { margin-top: 6px; font-size: 14px; }
+    .ft { font-weight: 900; color: rgba(230,238,252,.7); margin-right: 8px; }
+    .resultscore { font-weight: 900; font-size: 18px; letter-spacing: .5px; }
+
+    .logo-wrap { text-align: center; margin-bottom: 20px; }
+    .logo-img {
+      max-width: 220px;
+      width: 100%;
+      height: auto;
+      opacity: 0.95;
+      filter: drop-shadow(0 0 12px rgba(255,255,255,0.08));
+      transition: transform 0.2s ease;
+    }
+    .logo-img:hover { transform: scale(1.03); }
+
+    .auth-wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .match-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .match-header .badge { margin-top: 8px; }
+
+    .picks-toggle { display: block; margin: 8px auto; }
   </style>
 </head>
 <body>
+  <div id="app"></div>
 
-<iframe src="https://script.google.com/macros/s/AKfycbw2NMgtnsiRUL3fXhr2AFoWJKpI6embI9C1TfRu4hjN4vkHzegAxYDb_pZKfp4KNk8Brg/exec"></iframe>
+<script>
+  let ALL_FIXTURES = [];
+  const app = document.getElementById("app");
 
-<div class="fallback">
-  <h2>Open the app</h2>
-  <p>If it doesn't load automatically:</p>
-  <a href="https://script.google.com/macros/s/AKfycbw2NMgtnsiRUL3fXhr2AFoWJKpI6embI9C1TfRu4hjN4vkHzegAxYDb_pZKfp4KNk8Brg/exec" style="color:#9cf;">
-    Click here
-  </a>
-</div>
+  // ---- Vercel -> Apps Script API helper (calls /api/gs) ----
+  async function gs(fn, ...args) {
+    const r = await fetch("/api/gs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fn, args })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || "API error");
+    return j.data;
+  }
 
+  function kickoffMsFromIso(isoUtc) {
+    const t = new Date(isoUtc).getTime();
+    return isNaN(t) ? null : t;
+  }
+
+  function getSelectedGroup() {
+    const sel = document.getElementById("groupFilter");
+    if (!sel || !sel.value) return "ALL";
+    return sel.value;
+  }
+
+  function renderFilteredFixtures(fixtures) {
+    const g = getSelectedGroup();
+    if (g === "ALL") renderMatches(fixtures);
+    else renderMatches(fixtures.filter(f => f.group === g));
+  }
+
+  function setupGroupFilter(fixtures) {
+    const select = document.getElementById("groupFilter");
+    if (!select) return;
+
+    const previous = select.value || "ALL";
+    const groups = [...new Set(
+      fixtures.map(f => String(f.group || "").trim()).filter(g => g)
+    )];
+
+    select.innerHTML = `
+      <option value="ALL">All</option>
+      ${groups.map(g => `<option value="${g}">${g}</option>`).join("")}
+    `;
+
+    const stillValid = (previous === "ALL") || groups.includes(previous);
+    select.value = stillValid ? previous : "ALL";
+    select.onchange = () => renderFilteredFixtures(ALL_FIXTURES);
+  }
+
+  function formatCountdown(kickoffIsoUtc) {
+    const k = kickoffMsFromIso(kickoffIsoUtc);
+    if (!k) return { text: "Bad kickoff time", locked: false };
+
+    const now = Date.now();
+    const diff = k - now;
+
+    if (diff <= 0) {
+      const minsAgo = Math.floor(Math.abs(diff) / 60000);
+      if (minsAgo < 120) return { text: `LIVE (locked) • ${minsAgo}m in`, locked: true };
+      return { text: `LOCKED`, locked: true };
+    }
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+
+    let text = "Starts in ";
+    if (days > 0) text += `${days}d ${hours}h`;
+    else if (hours > 0) text += `${hours}h ${mins}m`;
+    else text += `${mins}m`;
+
+    return { text, locked: false };
+  }
+
+  function formatKickoffBoth(isoUtc) {
+    const d = new Date(isoUtc);
+    if (isNaN(d.getTime())) return `Kickoff: ${isoUtc} (bad date)`;
+
+    const fmtUK = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London",
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+
+    const fmtRO = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Bucharest",
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+
+    return `UK: ${fmtUK.format(d)} • RO: ${fmtRO.format(d)}`;
+  }
+
+  const LS_KEY = "bolao_user_id";
+
+  function setUser(id) {
+    localStorage.setItem(LS_KEY, id);
+    sessionStorage.setItem(LS_KEY, id);
+  }
+
+  function getUser() {
+    return localStorage.getItem(LS_KEY) || sessionStorage.getItem(LS_KEY);
+  }
+
+  const logout = () => { localStorage.removeItem(LS_KEY); location.reload(); };
+
+  function showLogin() {
+    app.innerHTML = `
+      <div class="card">
+        <div class="logo-wrap">
+          <img class="logo-img" src="https://images2.imgbox.com/22/3d/p6WpduIi_o.png">
+        </div>
+
+        <h2 style="text-align:center;">Magoṭei™ Bolão</h2>
+        <p class="muted" style="text-align:center;">Predictions lock at kickoff • UK + RO times</p>
+        <p class="muted" style="text-align:center;">Register once, then log in with your PIN.</p>
+
+        <div class="auth-wrap">
+          <div class="card">
+            <h3>Register (first time)</h3>
+            <div class="row">
+              <input id="r_name" placeholder="Your name" />
+              <input id="r_code" placeholder="Join code" />
+              <input id="r_pin" placeholder="Create PIN (min 4)" type="password" />
+              <button id="registerBtn">Register</button>
+            </div>
+            <p class="muted" style="margin-top:8px;">Don’t forget your PIN. It’s your private key.</p>
+          </div>
+
+          <div class="card">
+            <h3>Login</h3>
+            <div class="row">
+              <input id="l_name" placeholder="Your name" />
+              <input id="l_code" placeholder="Join code" />
+              <input id="l_pin" placeholder="Your PIN" type="password" />
+              <button id="loginBtn">Login</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("registerBtn").onclick = async () => {
+      try {
+        const name = document.getElementById("r_name").value;
+        const code = document.getElementById("r_code").value;
+        const pin  = document.getElementById("r_pin").value;
+
+        const res = await gs("register", name, code, pin);
+        setUser(res.user_id);
+        showMain();
+      } catch (err) {
+        alert(err.message || err);
+      }
+    };
+
+    document.getElementById("loginBtn").onclick = async () => {
+      try {
+        const name = document.getElementById("l_name").value;
+        const code = document.getElementById("l_code").value;
+        const pin  = document.getElementById("l_pin").value;
+
+        const res = await gs("login", name, code, pin);
+        setUser(res.user_id);
+        showMain();
+      } catch (err) {
+        alert(err.message || err);
+      }
+    };
+  }
+
+  async function showMain() {
+    const uid = getUser();
+    if (!uid) return showLogin();
+
+    app.innerHTML = `
+      <div class="logo-wrap">
+        <img class="logo-img" src="https://images2.imgbox.com/22/3d/p6WpduIi_o.png">
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between; width:100%;">
+          <div>
+            <div id="hello" style="font-weight:bold;"></div>
+            <div class="muted">Magoṭei™ Bolão</div>
+            <div class="muted">Your picks are private until kickoff. You can edit until kickoff, then they lock.</div>
+          </div>
+          <div class="row">
+            <button id="refresh">Refresh</button>
+            <button id="logout">Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="adminPanel"></div>
+
+      <div class="card">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Matches</h2>
+          <select id="groupFilter"></select>
+        </div>
+        <div id="matches" class="muted">Loading…</div>
+      </div>
+
+      <div class="card">
+        <h2>Leaderboard</h2>
+        <div id="leaderboard" class="muted">Loading…</div>
+      </div>
+    `;
+
+    document.getElementById("logout").onclick = logout;
+    document.getElementById("refresh").onclick = showMain;
+
+    try {
+      const me = await gs("getMe", uid);
+      document.getElementById("hello").textContent = `Hello, ${me.name}`;
+      renderAdminPanel(!!me.is_admin);
+
+      const fixtures = await gs("listFixtures", uid);
+      ALL_FIXTURES = fixtures;
+      setupGroupFilter(fixtures);
+      renderFilteredFixtures(fixtures);
+
+      const rows = await gs("getLeaderboard", uid);
+      renderLeaderboard(rows);
+
+      if (window._bolaoTimer) clearInterval(window._bolaoTimer);
+      window._bolaoTimer = setInterval(async () => {
+        try {
+          const fixtures2 = await gs("listFixtures", uid);
+          ALL_FIXTURES = fixtures2;
+          setupGroupFilter(fixtures2);
+          renderFilteredFixtures(fixtures2);
+
+          const rows2 = await gs("getLeaderboard", uid);
+          renderLeaderboard(rows2);
+        } catch {}
+      }, 120000);
+
+    } catch (err) {
+      alert(err.message || err);
+      // If token/user got stale
+      logout();
+    }
+  }
+
+  function renderMatches(fixtures) {
+    const container = document.getElementById("matches");
+    if (!fixtures.length) {
+      container.textContent = "No fixtures yet. Add rows in the Fixtures sheet.";
+      return;
+    }
+
+    container.innerHTML = "";
+    fixtures.forEach(fx => {
+      const cd = formatCountdown(fx.kickoff_utc);
+      const isFinished = String(fx.status || "").toLowerCase() === "finished"
+        && fx.home_goals !== "" && fx.home_goals !== null
+        && fx.away_goals !== "" && fx.away_goals !== null;
+
+      const state = cd.locked
+        ? `<span class="badge badge-locked">LOCKED</span>`
+        : `<span class="badge badge-open">OPEN</span>`;
+
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div class="match-header">
+          <div>
+            <div class="matchline">
+              <div class="team">
+                ${fx.home_badge_url ? `<img class="badge-img" src="${fx.home_badge_url}" onerror="this.style.display='none'">` : ``}
+                <div style="font-weight:900; font-size:16px;">${fx.home_team}</div>
+              </div>
+
+              <div class="vs">vs</div>
+
+              <div class="team" style="justify-content:flex-end;">
+                <div style="font-weight:900; font-size:16px;">${fx.away_team}</div>
+                ${fx.away_badge_url ? `<img class="badge-img" src="${fx.away_badge_url}" onerror="this.style.display='none'">` : ``}
+              </div>
+            </div>
+
+            <div class="muted">Kickoff: ${formatKickoffBoth(fx.kickoff_utc)}</div>
+            <div class="muted countdown">${cd.text}</div>
+            ${isFinished ? `<div class="resultline"><span class="ft">FT</span> <span class="resultscore">${fx.home_goals}–${fx.away_goals}</span></div>` : ``}
+          </div>
+          <div>${state}</div>
+        </div>
+
+        <div class="scorebox" style="margin-top:10px;">
+          <input class="ph scoreInput" type="number" min="0" placeholder="0" value="${fx.my_pred_home ?? ""}">
+          <span class="vs">—</span>
+          <input class="pa scoreInput" type="number" min="0" placeholder="0" value="${fx.my_pred_away ?? ""}">
+          <button class="save">Save</button>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <button class="toggle picks-toggle" style="display:none;">Hide picks</button>
+        </div>
+        <div class="picks"></div>
+      `;
+
+      const ph = div.querySelector(".ph");
+      const pa = div.querySelector(".pa");
+      const save = div.querySelector(".save");
+      const picksDiv = div.querySelector(".picks");
+      const toggleBtn = div.querySelector(".toggle");
+
+      let picksVisible = true;
+      function setPicksVisible(v) {
+        picksVisible = v;
+        if (!toggleBtn) return;
+        toggleBtn.textContent = picksVisible ? "Hide picks" : "Show picks";
+        picksDiv.style.display = picksVisible ? "" : "none";
+      }
+
+      if (fx.locked) save.disabled = true;
+
+      save.onclick = async () => {
+        try {
+          const uid = getUser();
+          await gs("savePrediction", uid, fx.fixture_id, ph.value, pa.value);
+          alert("Saved");
+          showMain();
+        } catch (err) {
+          alert(err.message || err);
+        }
+      };
+
+      // Auto-reveal picks after kickoff
+      if (cd.locked) {
+        toggleBtn.style.display = "inline-block";
+        toggleBtn.onclick = () => setPicksVisible(!picksVisible);
+        picksDiv.innerHTML = `<p class="muted">Loading picks…</p>`;
+
+        (async () => {
+          try {
+            const uid = getUser();
+            const res = await gs("viewPicks", uid, fx.fixture_id);
+
+            if (!res.picks || !res.picks.length) {
+              picksDiv.innerHTML = `<p class="muted">No picks yet.</p>`;
+              return;
+            }
+
+            const myUid = String(uid);
+
+            const rows = res.picks.map(p => {
+              const isMine = String(p.user_id) === myUid;
+              return `<tr class="${isMine ? "pick-mine" : ""}">
+                <td>${p.name}${isMine ? " (you)" : ""}</td>
+                <td>${p.pred_home} - ${p.pred_away}</td>
+              </tr>`;
+            }).join("");
+
+            picksDiv.innerHTML = `
+              <p class="muted">Picks (revealed after kickoff):</p>
+              <table>
+                <thead><tr><th>Name</th><th>Prediction</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            `;
+
+            setPicksVisible(true);
+          } catch (err) {
+            picksDiv.innerHTML = `<p class="muted">Could not load picks.</p>`;
+            console.log(err);
+          }
+        })();
+
+      } else {
+        if (toggleBtn) toggleBtn.style.display = "none";
+        picksDiv.style.display = "";
+        picksDiv.innerHTML = `<p class="muted" style="font-size:12px;">Picks are hidden until kickoff.</p>`;
+      }
+
+      container.appendChild(div);
+    });
+  }
+
+  function renderAdminPanel(isAdmin) {
+    const host = document.getElementById("adminPanel");
+    if (!host) return;
+
+    if (!isAdmin) {
+      host.innerHTML = "";
+      return;
+    }
+
+    host.innerHTML = `
+      <div class="card">
+        <h2>Admin</h2>
+
+        <div class="card">
+          <h3>Add fixture</h3>
+          <div class="row">
+            <input id="a_fixture_id" placeholder="fixture_id (unique)" style="width:160px;">
+            <input id="a_home" placeholder="Home team" style="width:180px;">
+            <input id="a_away" placeholder="Away team" style="width:180px;">
+          </div>
+          <div class="row">
+            <input id="a_kickoff" placeholder="kickoff_utc e.g. 2026-03-01T20:00:00Z" style="width:360px;">
+            <input id="a_group" placeholder="group e.g. MD3" style="width:120px;">
+            <input id="a_weight" placeholder="weight" type="number" min="1" style="width:90px;" value="1">
+            <button id="a_addBtn">Add</button>
+          </div>
+          <div class="muted" style="font-size:12px;">Tip: kickoff must end with Z and be UTC.</div>
+        </div>
+
+        <div class="card">
+          <h3>Enter result</h3>
+          <div class="row">
+            <input id="r_fixture_id" placeholder="fixture_id" style="width:160px;">
+            <input id="r_hg" placeholder="Home goals" type="number" min="0" style="width:120px;">
+            <input id="r_ag" placeholder="Away goals" type="number" min="0" style="width:120px;">
+            <select id="r_status">
+              <option value="scheduled">scheduled</option>
+              <option value="finished">finished</option>
+            </select>
+            <button id="r_setBtn">Save result</button>
+          </div>
+          <div class="muted" style="font-size:12px;">Set status to <b>finished</b> to include in scoring.</div>
+        </div>
+
+        <div class="card">
+          <h3>Scoring</h3>
+          <div class="row">
+            <button id="s_computeBtn">Compute scores</button>
+            <span class="muted" id="s_msg"></span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const uid = getUser();
+
+    document.getElementById("a_addBtn").onclick = async () => {
+      try {
+        const fixture = {
+          fixture_id: document.getElementById("a_fixture_id").value,
+          home_team: document.getElementById("a_home").value,
+          away_team: document.getElementById("a_away").value,
+          kickoff_utc: document.getElementById("a_kickoff").value,
+          group: document.getElementById("a_group").value,
+          stage_weight: document.getElementById("a_weight").value
+        };
+
+        await gs("adminAddFixture", uid, fixture);
+        alert("Fixture added");
+        showMain();
+      } catch (err) {
+        alert(err.message || err);
+      }
+    };
+
+    document.getElementById("r_setBtn").onclick = async () => {
+      try {
+        const fixtureId = document.getElementById("r_fixture_id").value;
+        const hg = document.getElementById("r_hg").value;
+        const ag = document.getElementById("r_ag").value;
+        const status = document.getElementById("r_status").value;
+
+        await gs("adminSetResult", uid, fixtureId, hg, ag, status);
+        alert("Result saved");
+        showMain();
+      } catch (err) {
+        alert(err.message || err);
+      }
+    };
+
+    document.getElementById("s_computeBtn").onclick = async () => {
+      const msg = document.getElementById("s_msg");
+      msg.textContent = "Computing…";
+
+      try {
+        const res = await gs("adminComputeScores", uid);
+        msg.textContent = `Done. Rows: ${res.scored_rows ?? "?"}`;
+        showMain();
+      } catch (err) {
+        msg.textContent = "";
+        alert(err.message || err);
+      }
+    };
+  }
+
+  function renderLeaderboard(rows) {
+    const el = document.getElementById("leaderboard");
+    if (!el) return;
+
+    if (!rows || !rows.length) {
+      el.innerHTML = `No scores yet. (After results are entered, admin runs computeScores)`;
+      return;
+    }
+
+    const body = rows.map((r, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${r.name}</td>
+        <td><b>${r.total}</b></td>
+        <td>${r.AP}</td>
+        <td>${r.GV}</td>
+        <td>${r.SG}</td>
+        <td>${r.GP}</td>
+        <td>${r.AV}</td>
+        <td>${r.EG}</td>
+      </tr>
+    `).join("");
+
+    el.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Total</th>
+            <th>AP</th>
+            <th>GV</th>
+            <th>SG</th>
+            <th>GP</th>
+            <th>AV</th>
+            <th>EG</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+      <div class="muted" style="margin-top:8px; font-size:12px;">
+        Total = AP + GV + SG + GP + AV + EG (already includes stage weight if you use it)
+      </div>
+    `;
+  }
+
+  showMain();
+</script>
 </body>
 </html>

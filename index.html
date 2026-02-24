@@ -148,22 +148,32 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 
 /* ---------- Responsive / Mobile fixes ---------- */
 
-/* allow team blocks to shrink (the big culprit) */
+/* allow team blocks to shrink (prevents overflow) */
 .team { min-width: 0; }
 
-/* we’ll position the OPEN/LOCKED badge nicely */
-.match-header { position: relative; }
+/* match header is a centered column, badge is pinned */
+.match-header{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* centers on desktop */
+  text-align: center;
+}
+
+/* keep header content centered and stop badge overlap */
+.match-header > .mh-inner{
+  width: 100%;
+  max-width: 760px;      /* tweak wider/narrower if you want */
+  margin: 0 auto;
+  padding-right: 92px;   /* reserves room for OPEN/LOCKED badge */
+  padding-left: 12px;
+}
 
 /* keep badge pinned top-right inside the card */
-.stateBadge {
+.stateBadge{
   position: absolute;
   top: 12px;
   right: 12px;
-}
-
-/* the header content should span full width so truncation works */
-.match-header > .mh-inner {
-  width: 100%;
 }
 
 /* team name truncation */
@@ -202,7 +212,14 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
   /* save button can wrap nicely if space is tight */
   .scorebox { flex-wrap: wrap; }
   .scorebox .save { width: 100%; max-width: 220px; }
+
+  /* remove the desktop right-padding on tiny screens */
+  .match-header > .mh-inner{
+    padding-right: 12px;
+    padding-left: 12px;
+  }
 }
+/* ---------- END Responsive / Mobile fixes ---------- */
     
   </style>
 </head>
@@ -763,6 +780,7 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 </script>
 </body>
 </html>
+
 
 
 

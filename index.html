@@ -270,6 +270,7 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 
 <script>
   let ALL_FIXTURES = [];
+  let HIDE_FINISHED = true;
   const app = document.getElementById("app");
 
   // ---- Vercel -> Apps Script API helper (calls /api/gs) ----
@@ -320,11 +321,25 @@ if (!r.ok) {
     return sel.value;
   }
 
-  function renderFilteredFixtures(fixtures) {
-    const g = getSelectedGroup();
-    if (g === "ALL") renderMatches(fixtures);
-    else renderMatches(fixtures.filter(f => f.group === g));
+function isFixtureFinished(fx) {
+  return String(fx.status || "").toLowerCase() === "finished";
+}
+
+function renderFilteredFixtures(fixtures) {
+  const g = getSelectedGroup();
+
+  let list = fixtures;
+
+  if (g !== "ALL") {
+    list = list.filter(f => String(f.group || "") === g);
   }
+
+  if (HIDE_FINISHED) {
+    list = list.filter(f => !isFixtureFinished(f));
+  }
+
+  renderMatches(list);
+}
 
   function setupGroupFilter(fixtures) {
     const select = document.getElementById("groupFilter");
@@ -507,10 +522,18 @@ if (!r.ok) {
       <div id="adminPanel"></div>
 
       <div class="card">
-        <div class="row" style="justify-content: space-between;">
-          <h2>Matches</h2>
-          <select id="groupFilter"></select>
-        </div>
+       <div class="row" style="justify-content: space-between;">
+  <h2>Matches</h2>
+
+  <div class="row">
+    <label class="muted" style="font-size:13px;">
+      <input id="hideFinished" type="checkbox" checked>
+      Hide finished
+    </label>
+
+    <select id="groupFilter"></select>
+  </div>
+</div>
         <div id="matches" class="muted">Loading…</div>
       </div>
 
@@ -523,6 +546,15 @@ if (!r.ok) {
     document.getElementById("logout").onclick = logout;
     document.getElementById("refresh").onclick = showMain;
 
+const hideFinishedEl = document.getElementById("hideFinished");
+if (hideFinishedEl) {
+  hideFinishedEl.checked = HIDE_FINISHED;
+  hideFinishedEl.onchange = () => {
+    HIDE_FINISHED = hideFinishedEl.checked;
+    renderFilteredFixtures(ALL_FIXTURES);
+  };
+}
+    
     try {
       const me = await gs("getMe", uid);
       document.getElementById("hello").textContent = `Hello, ${me.name}`;

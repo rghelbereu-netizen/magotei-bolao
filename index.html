@@ -286,6 +286,10 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
 
       const text = await r.text();
 
+if (!r.ok) {
+  console.error("Backend returned:", text);
+}
+
       let j;
       try {
         j = JSON.parse(text);
@@ -550,18 +554,8 @@ Predict Champions League matches, compete with friends, and climb the leaderboar
      } catch (err) {
       console.error(err);
       alert(err.message || err);
-
-      app.innerHTML = `
-        <div class="card">
-          <h2>Temporary connection problem</h2>
-          <p class="muted">The site loaded, but the backend did not respond properly.</p>
-          <div class="row">
-            <button onclick="location.reload()">Try again</button>
-            <button onclick="logout()">Logout</button>
-          </div>
-        </div>
-      `;
     }
+      }
   }
 
   function renderMatches(fixtures) {
